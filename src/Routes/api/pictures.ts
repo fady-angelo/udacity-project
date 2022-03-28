@@ -3,7 +3,7 @@ import path from "path";
 import * as fs from "fs";
 import processPicture from "../../modules/picture_processing";
 
-const Resize = async (req: Request, res: Response) => {
+const Resize = async (req: Request, res: Response): Promise<void> => {
   const fileName = req.query.fileName as string;
   const height = Number(req.query.height);
   const width = Number(req.query.width);
@@ -18,23 +18,27 @@ const Resize = async (req: Request, res: Response) => {
   // const imgs = img.includes(fileName);
 
   try {
-    if (fileName != null || undefined) {
-      if (!isNaN(height) && !isNaN(width)) {
-        if (fs.existsSync(currentPath)) {
-          if (fs.existsSync(outputpath)) {
-            res.sendFile(outputpath);
+    if (width > 0 && height > 0) {
+      if (fileName != null || undefined) {
+        if (!isNaN(height) && !isNaN(width)) {
+          if (fs.existsSync(currentPath)) {
+            if (fs.existsSync(outputpath)) {
+              res.sendFile(outputpath);
+            } else {
+              await processPicture(currentPath, width, height, outputpath);
+              res.sendFile(outputpath);
+            }
           } else {
-            await processPicture(currentPath, width, height, outputpath);
-            res.sendFile(outputpath);
+            res.send("file not found please check the file name");
           }
         } else {
-          res.send("file not found please check the file name");
+          res.send("Please check that the height or width is number");
         }
       } else {
-        res.send("Please check that the height or width is number");
+        res.send("please enter a name as a query in url");
       }
     } else {
-      res.send("please enter a name as a query in url");
+      res.send("please enter width and height with numbers greater than 0");
     }
   } catch (error) {
     console.log(error);
@@ -47,6 +51,7 @@ const Resize = async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
   }
+  return;
 };
 
 export default Resize;
